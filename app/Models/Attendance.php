@@ -18,12 +18,12 @@ class Attendance extends Model
     protected $appends = ['clock_in_date'];
     protected $guarded = ['id'];
 
-    protected static function boot()
-    {
-        parent::boot();
+    // protected static function boot()
+    // {
+    //     parent::boot();
 
-        static::observe(AttendanceObserver::class);
-    }
+    //     static::observe(AttendanceObserver::class);
+    // }
 
     public function user()
     {

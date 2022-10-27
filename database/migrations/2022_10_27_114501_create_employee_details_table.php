@@ -13,17 +13,18 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('attendances', function (Blueprint $table) {
+        Schema::create('employee_details', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('user_id')->unsigned();
+            $table->string('employee_id');
+            $table->bigInteger('department_id')->unsigned();
+            $table->bigInteger('designation_id')->unsigned();
+
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
-            $table->dateTime('clock_in_time');
-            $table->dateTime('clock_out_time')->nullable();
-            $table->string('clock_in_ip');
-            $table->string('clock_out_ip');
-            $table->string('working_from')->default('office');
-            $table->enum('late', ['yes', 'no']);
-            $table->enum('half_day', ['yes', 'no']);
+            $table->string('job_title')->nullable();
+            $table->text('address')->nullable();
+            $table->integer('hourly_rate')->nullable();
+            $table->string('joining_date')->nullable();
             $table->timestamps();
         });
     }
@@ -35,6 +36,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('attendances');
+        Schema::dropIfExists('employee_details');
     }
 };

@@ -13,17 +13,17 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('attendances', function (Blueprint $table) {
+        Schema::create('leaves', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('user_id')->unsigned();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('cascade');
-            $table->dateTime('clock_in_time');
-            $table->dateTime('clock_out_time')->nullable();
-            $table->string('clock_in_ip');
-            $table->string('clock_out_ip');
-            $table->string('working_from')->default('office');
-            $table->enum('late', ['yes', 'no']);
-            $table->enum('half_day', ['yes', 'no']);
+            $table->bigInteger('leave_type_id')->unsigned();
+            $table->foreign('leave_type_id')->references('id')->on('leave_types')->onDelete('cascade')->onUpdate('cascade');
+            $table->string('duration');
+            $table->date('leave_date');
+            $table->text('reason');
+            $table->enum('status', ['approved', 'pending', 'rejected']);
+            $table->text('reject_reason')->nullable();
             $table->timestamps();
         });
     }
@@ -35,6 +35,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('attendances');
+        Schema::dropIfExists('leaves');
     }
 };
