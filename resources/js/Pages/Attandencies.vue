@@ -49,7 +49,7 @@ export default {
         },
 
         userId(key){
-            return split('#',key);
+            return key.split('#');
         }
     },
     computed: {
@@ -445,8 +445,8 @@ select {
                             </td>
 
                             <td class="text-dark f-w-500 text-right attendance-total px-2 w-100">
-                                {{ totalPresent +  (attendance.length - 1) }}
-                                <!-- {{ $totalPresent . ' / <span class="text-lightest">' . (count($attendance) - 1) . '</span>' }} -->
+                                <!-- {{ totalPresent +  (attendance.length - 1) }} -->
+                                {{ $totalPresent }}   / {{attendancies.employeeAttendence.length - 1}}
                             </td>
                         </tr>
 
