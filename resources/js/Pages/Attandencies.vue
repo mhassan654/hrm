@@ -390,7 +390,7 @@ select {
                 </div>
             </div>
 
-            {{attendancies.employeeAttendence}} /
+            <!-- {{attendancies.employeeAttendence}} / -->
             {{day('su' + '-' + attendancies.month + attendancies.year)}}
             <div class="overflow-x-auto relative">
                 <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
@@ -400,7 +400,7 @@ select {
                             <th scope="col" class="py-3 px-2">
                                 Employee
                             </th>
-                            <th scope="col" class="py-3 px-2" v-for="d in range(1, attendancies.daysInMonth) " :key="d">
+                            <th scope="col" class="py-3 px-0" v-for="d in range(1, attendancies.daysInMonth) " :key="d">
                                 {{d}}
 
                                 <span class="text-dark-grey"><br>
@@ -419,9 +419,9 @@ select {
 
                         <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
 
-                            <td class="w-25 px-2"> {{attendance}} </td>
+                            <td class="w-[200px] px-2"> {{attendance}} </td>
 
-                            <td scope="row" class="py-4 px-6 font-medium text-gray-900 whitespace-nowrap
+                            <td scope="row" class="py-4 px-2 font-medium text-gray-900 whitespace-nowrap
                              dark:text-white" v-for="(day,t) in a" :key="t">
                                 <!-- {{day}} -->
                                 <span data-toggle="tooltip" data-original-title="leave" v-if="day == 'Leave'">
@@ -444,9 +444,9 @@ select {
                                 </div>
                             </td>
 
-                            <td class="text-dark f-w-500 text-right attendance-total px-2 w-100">
+                            <td class="text-dark text-right attendance-total px-2 w-25">
                                 <!-- {{ totalPresent +  (attendance.length - 1) }} -->
-                                {{ $totalPresent }}   / {{attendancies.employeeAttendence.length - 1}}
+                                {{ $totalPresent }}   / {{attendancies - 1}}
                             </td>
                         </tr>
 

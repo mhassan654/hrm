@@ -93,7 +93,7 @@ class AttendanceController extends Controller
 
     public function summaryData(Request $request)
     {
-        $month = '10';
+        $month = '09';
         $year = '2022';
         $employees = User::with(
             ['attendance' => function ($query) use ($request, $month, $year) {
