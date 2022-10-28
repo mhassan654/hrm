@@ -446,7 +446,7 @@ select {
 
                             <td class="text-dark text-right attendance-total px-2 w-25">
                                 <!-- {{ totalPresent +  (attendance.length - 1) }} -->
-                                {{ $totalPresent }}   / {{attendancies - 1}}
+                                {{ totalPresent }}   / {{(attendancies.daysInMonth) +1}}
                             </td>
                         </tr>
 
