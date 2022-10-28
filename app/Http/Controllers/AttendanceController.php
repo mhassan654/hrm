@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use App\Models\User;
 use Inertia\Inertia;
+use App\Models\Holiday;
 use App\Models\Attendance;
+use Illuminate\Http\Request;
 use App\Http\Requests\StoreAttendanceRequest;
 use App\Http\Requests\UpdateAttendanceRequest;
 
@@ -17,6 +20,8 @@ class AttendanceController extends Controller
      */
     public function index()
     {
+        $data = $this->summaryData();
+        dd($data);
         return Inertia::render('Attandencies');
     }
 
@@ -86,62 +91,61 @@ class AttendanceController extends Controller
         //
     }
 
-    public function summaryData($request)
+    public function summaryData(Request $request)
     {
+        $month = '10';
+        $year = '2022';
         $employees = User::with(
-            ['attendance' => function ($query) use ($request) {
-                $query->whereRaw('MONTH(attendances.clock_in_time) = ?', [$request->month])
-                    ->whereRaw('YEAR(attendances.clock_in_time) = ?', [$request->year]);
+            ['attendance' => function ($query) use ($request, $month, $year) {
+                $query->whereRaw('MONTH(attendances.clock_in_time) = ?', [$month])
+                    ->whereRaw('YEAR(attendances.clock_in_time) = ?', [$year]);
 
                 if ($request->late != 'all') {
                     $query = $query->where('attendances.late', $request->late);
                 }
-
-                if ($this->viewAttendancePermission == 'added') {
-                    $query = $query->where('attendances.added_by', user()->id);
-
-                } elseif ($this->viewAttendancePermission == 'owned') {
-                    $query = $query->where('attendances.user_id', user()->id);
-                }
             },
-            'leaves' => function ($query) use ($request) {
-                $query->whereRaw('MONTH(leaves.leave_date) = ?', [$request->month])
-                    ->whereRaw('YEAR(leaves.leave_date) = ?', [$request->year])
+            'leaves' => function ($query) use ($request, $month, $year) {
+                $query->whereRaw('MONTH(leaves.leave_date) = ?', [$month])
+                    ->whereRaw('YEAR(leaves.leave_date) = ?', [$year])
                     ->where('status', 'approved');
             },
-            'shifts' => function ($query) use ($request) {
-                $query->whereRaw('MONTH(employee_shift_schedules.date) = ?', [$request->month])
-                    ->whereRaw('YEAR(employee_shift_schedules.date) = ?', [$request->year]);
-            }]
+            'shifts' => function ($query) use ($request, $month, $year) {
+                $query->whereRaw('MONTH(employee_shift_schedules.date) = ?', [$month])
+                    ->whereRaw('YEAR(employee_shift_schedules.date) = ?', [$year]);
+            }
+            ]
         )
-        ->join('role_user', 'role_user.user_id', '=', 'users.id')
-            ->join('roles', 'roles.id', '=', 'role_user.role_id')
+        // ->join('role_user', 'role_user.user_id', '=', 'users.id')
+        //     ->join('roles', 'roles.id', '=', 'role_user.role_id')
             ->leftJoin('employee_details', 'employee_details.user_id', '=', 'users.id')
             ->select('users.id', 'users.name', 'users.email', 'users.created_at', 'employee_details.department_id', 'users.image')
-            ->where('roles.name', '<>', 'client')->groupBy('users.id');
+            // ->where('roles.name', '<>', 'client')
+            ->orderBy('users.id');
 
-        if ($request->department != 'all') {
-            $employees = $employees->where('employee_details.department_id', $request->department);
-        }
+        // if ($request->department != 'all') {
+        //     $employees = $employees->where('employee_details.department_id', $request->department);
+        // }
 
-        if ($request->userId != 'all') {
-            $employees = $employees->where('users.id', $request->userId);
-        }
+        // if ($request->userId != 'all') {
+        //     $employees = $employees->where('users.id', $request->userId);
+        // }
 
-        if ($this->viewAttendancePermission == 'owned') {
-            $employees = $employees->where('users.id', user()->id);
-        }
+        // if ($this->viewAttendancePermission == 'owned') {
+        //     $employees = $employees->where('users.id', user()->id);
+        // }
+
+        // dd($employees->get());
 
         $employees = $employees->get();
 
-        $this->holidays = Holiday::whereRaw('MONTH(holidays.date) = ?', [$request->month])->whereRaw('YEAR(holidays.date) = ?', [$request->year])->get();
+        $this->holidays = Holiday::whereRaw('MONTH(holidays.date) = ?', [$month])->whereRaw('YEAR(holidays.date) = ?', [$year])->get();
 
         $final = [];
         $holidayOccasions = [];
 
-        $this->daysInMonth = Carbon::parse('01-' . $request->month . '-' . $request->year)->daysInMonth;
-        $now = Carbon::now()->timezone($this->global->timezone);
-        $requestedDate = Carbon::parse(Carbon::parse('01-' . $request->month . '-' . $request->year))->endOfMonth();
+        $this->daysInMonth = Carbon::parse('01-' . $month . '-' . $year)->daysInMonth;
+        $now = Carbon::now()->timezone('Africa/Kampala');
+        $requestedDate = Carbon::parse(Carbon::parse('01-' . $month . '-' . $year))->endOfMonth();
 
         foreach ($employees as $employee) {
 
@@ -179,14 +183,17 @@ class AttendanceController extends Controller
                 }
             }
 
-            $emplolyeeName = view('components.employee', [
-                'user' => $employee
-            ]);
+            // $emplolyeeName = view('components.employee', [
+            //     'user' => $employee
+            // ]);
+
+
+            $emplolyeeName =Inertia::render('Employee',['user' => $employee ]);
 
             $final[$employee->id . '#' . $employee->name][] = $emplolyeeName;
 
-            if ($employee->employeeDetail->joining_date->greaterThan(Carbon::parse(Carbon::parse('01-' . $request->month . '-' . $request->year)))) {
-                if($request->month == $employee->employeeDetail->joining_date->format('m') && $request->year == $employee->employeeDetail->joining_date->format('Y')){
+            if (Carbon::parse($employee->employeeDetail->joining_date)->greaterThan(Carbon::parse('01-' . $month . '-' . $year))) {
+                if($month == $employee->employeeDetail->joining_date->format('m') && $year == $employee->employeeDetail->joining_date->format('Y')){
                     if($employee->employeeDetail->joining_date->format('d') == '01'){
                         $dataBeforeJoin = array_fill(1, $employee->employeeDetail->joining_date->format('d'), '-');
                     }
@@ -195,13 +202,13 @@ class AttendanceController extends Controller
                     }
                 }
 
-                if(($request->month < $employee->employeeDetail->joining_date->format('m') && $request->year == $employee->employeeDetail->joining_date->format('Y')) || $request->year < $employee->employeeDetail->joining_date->format('Y'))
+                if(($month < $employee->employeeDetail->joining_date->format('m') && $year == $employee->employeeDetail->joining_date->format('Y')) || $year < $employee->employeeDetail->joining_date->format('Y'))
                 {
                     $dataBeforeJoin = array_fill(1, $this->daysInMonth, '-');
                 }
             }
 
-            if(Carbon::parse('01-' . $request->month . '-' . $request->year)->isFuture()){
+            if(Carbon::parse('01-' . $month . '-' . $year)->isFuture()){
                 $dataBeforeJoin = array_fill(1, $this->daysInMonth, '-');
             }
 
@@ -232,10 +239,11 @@ class AttendanceController extends Controller
             5 => 'Fr',
             6 => 'Sa',
         ];
-        $this->month = $request->month;
-        $this->year = $request->year;
-
-        $view = view('attendances.ajax.summary_data', $this->data)->render();
+        $this->month = $month;
+        $this->year = $year;
+        // dd($weekMap[\Carbon\Carbon::parse(\Carbon\Carbon::parse($i . '-' . $month . '-' . $year))->dayOfWeek]);
+        // return $this->data;
+        return Inertia::render('Attandencies',['attendancies'=>$this->data]);
         // return Reply::dataOnly(['status' => 'success', 'data' => $view]);
     }
 }

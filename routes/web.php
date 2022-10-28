@@ -30,5 +30,6 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::get('/attendancies', [AttendanceController::class,'index'])->middleware(['auth', 'verified'])->name('attendance');
+Route::get('/attendancies/data', [AttendanceController::class,'summaryData'])->middleware(['auth', 'verified'])->name('attendance.data');
 
 require __DIR__.'/auth.php';

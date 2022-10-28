@@ -1,13 +1,62 @@
 <script>
+import moment from 'moment';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import {
     Head
 } from '@inertiajs/inertia-vue3';
+import {
+    computed
+} from '@vue/runtime-core';
 
 export default {
+    props: {
+        attendancies: {
+            type: Object
+        },
+    },
+
+    data() {
+        return {
+            totalPresent: 0,
+        }
+    },
     components: {
         AuthenticatedLayout,
         Head
+    },
+    mounted() {
+        this.daysInMonth;
+    },
+
+    methods: {
+        range(min, max) {
+            var array = [],
+                j = 0;
+            for (var i = min; i <= max; i++) {
+                array[j] = i;
+                j++;
+            }
+            return array;
+        },
+
+        day(date) {
+            const mydate = date;
+            console.log(mydate)
+            let weekday = moment(mydate).format('dd');
+            console.log(weekday);
+            return weekday;
+
+        },
+
+        userId(key){
+            return split('#',key);
+        }
+    },
+    computed: {
+        daysInMonth() {
+            // console.log(this.$props.attendancies.daysInMonth);
+        },
+
     }
 }
 </script>
@@ -91,12 +140,12 @@ select {
 <AuthenticatedLayout>
     <template #header>
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-        Attendancies
+            Attendancies
         </h2>
     </template>
 
     <div class="py-5">
-        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
+        <div class="w-full mx-auto sm:px-6 lg:px-8">
             <div class="filter-box">
                 <!-- FILTER START -->
                 <form action="" id="filter-form">
@@ -340,6 +389,71 @@ select {
 
                 </div>
             </div>
+
+            {{attendancies.year}} /
+            {{day('su' + '-' + attendancies.month + attendancies.year)}}
+            <div class="overflow-x-auto relative">
+                <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                        <tr>
+                            <th scope="col" class="py-3 px-2">
+                                Employee
+                            </th>
+                            <th scope="col" class="py-3 px-2" v-for="d in range(1, attendancies.daysInMonth) " :key="d">
+                                {{d}}
+
+                                <span class="text-dark-grey"><br>
+
+                                    <!-- {{ $weekMap[\Carbon\Carbon::parse(\Carbon\Carbon::parse($i . '-' . $month . '-' . $year))->dayOfWeek] }} -->
+                                    {{attendancies.weekMap[day(d + '-' + attendancies.month + '-' + attendancies.year)]}}
+                                </span>
+                            </th>
+
+                            <th class="text-right px-2">Total</th>
+                        </tr>
+                    </thead>
+
+                    <tbody v-for="(a,attendance) in attendancies.employeeAttendence" :key="a">
+                        <!-- {{attendance}} -->
+
+                        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+
+                            <td class="w-25 px-2"> {{attendance}} </td>
+
+                            <td scope="row" class="py-4 px-6 font-medium text-gray-900 whitespace-nowrap
+                             dark:text-white" v-for="(day,t) in a" :key="t">
+                                <!-- {{day}} -->
+                                <span data-toggle="tooltip" data-original-title="leave" v-if="day == 'Leave'">
+                                    L
+                                </span>
+
+                                <a href="javascript:;" class="edit-attendance" data-user-id="1" data-attendance-date="t" v-else-if="day == 'Absent'">
+                                    x
+                                </a>
+
+                                <a href="javascript:;" class="edit-attendance" data-user-id="1" data-attendance-date="t" v-else-if="day == 'Holiday'">
+                                    H
+                                </a>
+
+                                <div v-else>
+                                    <span v-if="day !== '-'">
+                                        {{totalPresent === totalPresent + 1}}
+                                    </span>
+                                    {{t}}
+                                </div>
+                            </td>
+
+                            <td class="text-dark f-w-500 text-right attendance-total px-2 w-100">
+                                {{ totalPresent +  (attendance.length - 1) }}
+                                <!-- {{ $totalPresent . ' / <span class="text-lightest">' . (count($attendance) - 1) . '</span>' }} -->
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+
         </div>
     </div>
 </AuthenticatedLayout>

@@ -11,6 +11,9 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
+    /**
+     *  * @property-read \App\Models\EmployeeDetails|null $employeeDetail
+     */
 
     /**
      * The attributes that are mass assignable.
@@ -92,5 +95,35 @@ class User extends Authenticatable
         $users->orderBy('users.name', 'asc');
         $users->groupBy('users.id');
         return $users->get();;
+    }
+
+    public function employeeDetail()
+    {
+        return $this->hasOne(EmployeeDetails::class, 'user_id');
+    }
+
+    public function employeeDetails()
+    {
+        return $this->hasOne(EmployeeDetails::class);
+    }
+
+    public function employee()
+    {
+        return $this->hasMany(EmployeeDetails::class, 'user_id');
+    }
+
+    public function attendance()
+    {
+        return $this->hasMany(Attendance::class, 'user_id');
+    }
+
+    public function leaves()
+    {
+        return $this->hasMany(Leave::class, 'user_id');
+    }
+
+    public function shifts()
+    {
+        return $this->hasMany(EmployeeShiftSchedule::class, 'user_id');
     }
 }
